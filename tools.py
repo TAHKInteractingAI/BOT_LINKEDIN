@@ -21,27 +21,26 @@ def get_link(driver: WebDriver, link: str) -> bool:
 
 def update_state(data: list[dict], index: int, state: list[str]) -> None:
     """Update state after go to profile page."""
-    data[index]["state_1"] = state[0]
-    data[index]["state_2"] = state[1]
-    data[index]["state_3"] = state[2]
+    data[index]["STATE_1"] = state[0]
+    data[index]["STATE_2"] = state[1]
+    data[index]["STATE_3"] = state[2]
 
 
-def import_excel(data: list[dict], file_name="Connect_Linkedin.xlsx") -> None:
+def import_excel(data: list[dict], file_name="LINKEDIN_DATA.xlsx") -> None:
     """Import data from an excel file."""
     # GET DATA FROM EXCEL FILE.
-    df = pd.read_excel(file_name, sheet_name="Sheet1", header=None)
-    df.columns = ["LinkedIn_Link", "state_1", "state_2", "state_3"]
+    df = pd.read_excel(file_name, sheet_name="Sheet1")
     # FORMAT DATA TO PYTHON OBJECT.
     data.clear()
     for index in range(df.shape[0]):
         data.append({key: value[index] for key, value in df.to_dict().items()})
 
 
-def export_excel(data: list[dict], file_name="Connect_Linkedin.xlsx") -> None:
+def export_excel(data: list[dict], file_name="LINKEDIN_DATA.xlsx") -> None:
     """Export data to an excel file."""
     with pd.ExcelWriter(file_name, engine="openpyxl", mode="w") as writer:
         df = pd.DataFrame(data)
-        df.to_excel(writer, sheet_name="Sheet1", index=False, header=False)
+        df.to_excel(writer, sheet_name="Sheet1", index=False)
 
 
 # MAIN FUNCTION.
@@ -126,7 +125,7 @@ def connect(driver: WebDriver, data: list[dict], notification: StringVar) -> Non
 
     for index, datum in enumerate(data):
         # CONTINUE TO NEXT RECORD.
-        if not get_link(driver, datum["LinkedIn_Link"]):
+        if not get_link(driver, datum["LINKEDIN_LINK"]):
             continue
         # MAKE CONNECT.
         try:
