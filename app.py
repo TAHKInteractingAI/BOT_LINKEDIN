@@ -5,13 +5,14 @@ from selenium.webdriver.chrome.service import Service
 
 import tools
 import components
+import constants as const
 
 
 class App(ctk.CTk):
     DRIVER, DATA = None, []
 
     @classmethod
-    def load_driver(cls, executable_path="chromedriver.exe") -> None:
+    def load_driver(cls, executable_path=const.PATH_CHROME_DRIVER) -> None:
         """Load Chrome Driver."""
         if cls.DRIVER != None:
             cls.DRIVER.quit()

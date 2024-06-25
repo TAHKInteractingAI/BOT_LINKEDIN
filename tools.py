@@ -36,7 +36,7 @@ def update_state(data: list[dict], index: int, states: list[str]) -> None:
     data[index]["STATE_3"] = states[2]
 
 
-def import_excel(data: list[dict], file_name="LINKEDIN_DATA.xlsx") -> None:
+def import_excel(data: list[dict], file_name=const.PATH_EXCEL_DATA) -> None:
     # GET DATA FROM EXCEL FILE.
     df = pd.read_excel(file_name, sheet_name="Sheet1")
     # FORMAT DATA TO PYTHON OBJECT.
@@ -45,7 +45,7 @@ def import_excel(data: list[dict], file_name="LINKEDIN_DATA.xlsx") -> None:
         data.append({key: value[index] for key, value in df.to_dict().items()})
 
 
-def export_excel(data: list[dict], file_name="LINKEDIN_DATA.xlsx") -> None:
+def export_excel(data: list[dict], file_name=const.PATH_EXCEL_DATA) -> None:
     with pd.ExcelWriter(file_name, engine="openpyxl", mode="w") as writer:
         df = pd.DataFrame(data)
         df.to_excel(writer, sheet_name="Sheet1", index=False)
