@@ -1,38 +1,57 @@
-from customtkinter import CTkButton, CTkLabel, CTkEntry, CTkFrame, StringVar
+from customtkinter import CTk, CTkButton, CTkLabel, CTkEntry, CTkFrame
 from constants import FONT_B, FONT_I
 
 
-class CustomButton(CTkButton):
-    def __init__(self, master, text, command, padx=0, pady=0, **configs):
-        super().__init__(master, height=40, text=text, command=command, **configs)
+class CustomEntry(CTkEntry):
+    def __init__(self, **configs):
+        padx, pady = configs.pop("padx", 20), configs.pop("pady", 20)
+        configs.update({"width": 280, "height": 45, "font": FONT_I})
+
+        super().__init__(**configs)
         self.pack(padx=padx, pady=pady)
 
 
-class LabelResult(CTkLabel):
-    def __init__(self, master, textvariable):
-        super().__init__(
-            master,
-            width=300,
-            height=50,
-            corner_radius=5,
-            font=FONT_B,
-            fg_color="white",
-            text_color="black",
-            textvariable=textvariable,
+class CustomButton(CTkButton):
+    def __init__(self, **configs):
+        padx, pady = configs.pop("padx", 0), configs.pop("pady", 0)
+        configs.update({"width": 150, "height": 40})
+
+        super().__init__(**configs)
+        self.pack(padx=padx, pady=pady)
+
+
+class Notification(CTkLabel):
+    def __init__(self, master: CTk, **configs):
+        configs.update(
+            {
+                "width": 300,
+                "height": 50,
+                "corner_radius": 5,
+                "font": FONT_B,
+                "fg_color": "white",
+                "text_color": "black",
+            }
         )
+
+        super().__init__(master, **configs)
         self.pack(padx=20, pady=20)
 
 
-class CustomEntry(CTkEntry):
-    def __init__(self, padx=20, pady=20, **configs):
-        super().__init__(width=280, height=45, font=FONT_I, **configs)
-        self.pack(padx=padx, pady=pady)
-
-
 class AccountFrame(CTkFrame):
-    def __init__(self, master, username: StringVar, password: StringVar):
-        super().__init__(master, 300, 200)
-        self.pack(pady=20)
+    def __init__(self, master: CTk, **configs):
+        super().__init__(master)
+        self.pack(padx=20, pady=20)
         # USERNAME & PASSWORD FIELD.
+        username, password = configs.pop("username", ""), configs.pop("password", "")
         CustomEntry(master=self, textvariable=username)
         CustomEntry(master=self, textvariable=password, show=" ")
+
+
+class FeatureFrame(CTkFrame):
+    def __init__(self, master: CTk, **configs):
+        super().__init__(master, fg_color="transparent")
+        self.pack()
+        # FEATURES.
+        login, run_task = configs.pop("login", None), configs.pop("run_task", None)
+        CustomButton(master=self, text="LOGIN", command=login, pady=20)
+        CustomButton(master=self, text="RUN TASK", command=run_task)

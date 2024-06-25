@@ -1,27 +1,12 @@
-import threading
-import customtkinter as ctk
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
+from threading import Thread
+from customtkinter import CTk, StringVar, BooleanVar
 
-import tools
-import components
-import constants as const
+import features
+from components import Notification, AccountFrame, FeatureFrame
 
 
-class App(ctk.CTk):
+class App(CTk):
     DRIVER, DATA = None, []
-
-    @classmethod
-    def load_driver(cls, executable_path=const.PATH_CHROME_DRIVER) -> None:
-        """Load Chrome Driver."""
-        if cls.DRIVER != None:
-            cls.DRIVER.quit()
-        try:
-            service = Service(executable_path=executable_path)
-            cls.DRIVER = webdriver.Chrome(service=service)
-            cls.DRIVER.implicitly_wait(10)
-        except:
-            cls.DRIVER = None
 
     def __init__(self):
         super().__init__(fg_color="black")
@@ -31,17 +16,16 @@ class App(ctk.CTk):
         self.wm_attributes("-topmost", 1)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         # CONTROL VARIABLE.
-        self.notification = ctk.StringVar(value="")
-        self.is_logged_in = ctk.BooleanVar(value=False)
-        self.username = ctk.StringVar(value="partner.info@ah-globalgroup.com")
-        self.password = ctk.StringVar(value="Nhan123@")
+        self.notification = StringVar(value="")
+        self.is_logged_in = BooleanVar(value=False)
+        self.username = StringVar(value="partner.info@ah-globalgroup.com")
+        self.password = StringVar(value="Nhan123@")
         # LAYOUT.
-        components.AccountFrame(self, self.username, self.password)
-        components.LabelResult(self, self.notification)
-        components.CustomButton(self, "LOGIN", self.login, 0, 20)
-        components.CustomButton(self, "RUN TASK", self.run_task)
+        AccountFrame(self, username=self.username, password=self.password)
+        Notification(self, textvariable=self.notification)
+        FeatureFrame(self, login=self.login, run_task=self.run_task)
 
-    def set_location(self):
+    def set_location(self) -> None:
         # SET WINDOW SIZE.
         WINDOW_WIDTH, WINDOW_HEIGHT = 400, 450
         # GET SCREEN SIZE.
@@ -53,46 +37,54 @@ class App(ctk.CTk):
         # SET LOCATION.
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{X_POSITION}+{Y_POSITION}")
 
-    def on_closing(self):
+    def on_closing(self) -> None:
         if App.DRIVER != None:
             App.DRIVER.quit()
         self.destroy()
 
-    def login(self) -> None:
+    def check_login(self) -> bool:
         # CLEAR NOTIFICATION.
         self.notification.set("")
-        # CHECK DATA STATE.
-        tools.import_excel(App.DATA)
+        # LOAD DATA.
+        App.DATA = features.import_excel()
         if not App.DATA:
-            self.notification.set("DATA IS EMPTY")
-            return
-        # CHECK DRIVER STATE.
-        App.load_driver()
+            self.notification.set("CAN'T LOAD DATA")
+            return False
+        # LOAD DRIVER.
+        App.DRIVER = features.load_driver(App.DRIVER)
         if not App.DRIVER:
             self.notification.set("CAN'T LOAD DRIVER")
-            return
-        # EXECUTE MISSION.
-        threading.Thread(
-            target=lambda: tools.login(
-                App.DRIVER,
-                self.notification,
-                self.is_logged_in,
-                self.username.get(),
-                self.password.get(),
-            )
-        ).start()
+            return False
+        return True
 
-    def run_task(self) -> None:
+    def login(self) -> None:
+        if self.check_login():
+            Thread(
+                target=lambda: features.login(
+                    App.DRIVER,
+                    self.notification,
+                    self.is_logged_in,
+                    self.username.get(),
+                    self.password.get(),
+                )
+            ).start()
+
+    def check_run_task(self) -> bool:
         # CLEAR NOTIFICATION.
         self.notification.set("")
-        # CHECK LOGIN STATE.
+        # CHECK LOGIN.
         if not self.is_logged_in.get():
-            self.notification.set("PLEASE LOGIN FIRST")
-            return
-        # EXECUTE MISSION.
-        threading.Thread(
-            target=lambda: tools.run_task(App.DRIVER, App.DATA, self.notification)
-        ).start()
+            self.notification.set("CAN'T FIND ACCOUNT")
+            return False
+        return True
+
+    def run_task(self) -> None:
+        if self.check_run_task():
+            Thread(
+                target=lambda: features.run_task(
+                    App.DRIVER, App.DATA, self.notification
+                )
+            ).start()
 
 
 if __name__ == "__main__":
