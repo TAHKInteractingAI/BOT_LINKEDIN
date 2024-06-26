@@ -167,15 +167,20 @@ def run_task(
     notification: StringVar,
     used_gsheets: BooleanVar,
 ) -> None:
+    error = None
     for index, datum in enumerate(data):
         # CONTINUE TO NEXT RECORD.
         if not get_link(driver, datum["LINKEDIN_LINK"]):
             continue
         # RUN TASK.
         send_connect(driver, data, index)
-        send_message(driver, data, index, datum)
+        error = send_message(driver, data, index, datum)
+        if error != None:
+            notification.set(error)
+            break
     # EXPORT DATA.
-    notification.set("TASK COMPLETED")
+    if error == None:
+        notification.set("TASK COMPLETED")
     if used_gsheets.get():
         export_gsheet(data)
     else:
@@ -219,7 +224,7 @@ def send_connect(driver: WebDriver, data: list[dict], index: int) -> None:
             update_state(data, index, const.CASE_CONNECT)
 
 
-def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -> None:
+def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -> str:
     # CHECK STATUS.
     if not check_status(data, index, const.CASE_MESSAGE):
         return
@@ -236,23 +241,32 @@ def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -
         driver.find_element(By.XPATH, const.BUTTON_MESSAGE).click()
         sleep(2)
         # TYPE MESSAGE.
-        textbox = driver.find_element(By.XPATH, const.FIELD_MESSAGE)
-        textbox.send_keys(Keys.CONTROL + "a")
-        textbox.send_keys(Keys.DELETE)
-        sleep(2)
+        for field in const.FIELD_MESSAGE:
+            try:
+                textbox = driver.find_element(By.XPATH, field)
+            except:
+                pass
+        # CLEAR TEXT.
+        if textbox.text != "":
+            textbox.send_keys(Keys.CONTROL + "a")
+            textbox.send_keys(Keys.DELETE)
+            sleep(2)
         textbox.send_keys(message)
         # ATTACH DATA.
         if attachment:
             rel_path = path.join("resources", "attachments", attachment)
             abs_path = path.abspath(rel_path)
-            attachbox = driver.find_element(By.XPATH, const.FIELD_ATTACHMENT)
-            attachbox.send_keys(abs_path)
-            sleep(2)
+            if path.exists(abs_path):
+                attachbox = driver.find_element(By.XPATH, const.FIELD_ATTACHMENT)
+                attachbox.send_keys(abs_path)
+                sleep(2)
+            else:
+                return f"{attachment} NOT FOUND AT ROW {index + 2}"
         # SEND MESSAGE.
         CONDITION = EC.element_to_be_clickable((By.XPATH, const.BUTTON_SUBMIT_MESSAGE))
         WebDriverWait(driver, 15).until(CONDITION)
         driver.find_element(By.XPATH, const.BUTTON_SUBMIT_MESSAGE).click()
-
         update_state(data, index, const.CASE_SUCCESS)
+        sleep(5)
     except:
         pass
