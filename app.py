@@ -19,14 +19,15 @@ class App(CTk):
     @classmethod
     def load_driver(cls) -> None:
         if cls.DRIVER != None:
-            cls.DRIVER.close()
-        else:
-            try:
-                service = Service(executable_path=CREDENTAILS_PATH)
-                cls.DRIVER = Chrome(service=service)
-                cls.DRIVER.implicitly_wait(10)
-            except:
-                cls.DRIVER = None
+            cls.DRIVER.quit()
+            cls.DRIVER = None
+
+        try:
+            service = Service(executable_path=CREDENTAILS_PATH)
+            cls.DRIVER = Chrome(service=service)
+            cls.DRIVER.implicitly_wait(10)
+        except:
+            cls.DRIVER = None
 
     def __init__(self):
         super().__init__(fg_color="black")
