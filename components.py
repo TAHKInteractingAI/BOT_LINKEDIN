@@ -1,4 +1,4 @@
-from customtkinter import CTk, CTkButton, CTkLabel, CTkEntry, CTkFrame
+from customtkinter import CTk, CTkButton, CTkLabel, CTkEntry, CTkFrame, CTkCheckBox
 from constants import FONT_B, FONT_I
 
 
@@ -9,6 +9,14 @@ class CustomEntry(CTkEntry):
 
         super().__init__(**configs)
         self.pack(padx=padx, pady=pady)
+
+
+class UsedCookies(CTkCheckBox):
+    def __init__(self, **configs):
+        configs.update({"text": "Apply Cookies", "font": FONT_I})
+
+        super().__init__(**configs)
+        self.pack(anchor="w", padx=20, pady=20)
 
 
 class CustomButton(CTkButton):
@@ -41,10 +49,13 @@ class AccountFrame(CTkFrame):
     def __init__(self, master: CTk, **configs):
         super().__init__(master)
         self.pack(padx=20, pady=20)
-        # USERNAME & PASSWORD FIELD.
+        # CONTROL VARIABLES.
         username, password = configs.pop("username", ""), configs.pop("password", "")
+        used_cookies = configs.pop("used_cookies", None)
+
         CustomEntry(master=self, textvariable=username)
-        CustomEntry(master=self, textvariable=password, show=" ")
+        CustomEntry(master=self, textvariable=password, show=" ", pady=0)
+        UsedCookies(master=self, variable=used_cookies)
 
 
 class FeatureFrame(CTkFrame):

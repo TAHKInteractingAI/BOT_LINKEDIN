@@ -1,5 +1,6 @@
 from os import path
 from time import sleep
+from pickle import load, dump
 from customtkinter import StringVar, BooleanVar
 from pandas import DataFrame, ExcelWriter, read_excel
 
@@ -33,6 +34,8 @@ def import_excel() -> list[dict]:
     data = list()
     try:
         df = read_excel(const.PATH_EXCEL_DATA, sheet_name="Sheet1")
+        df = df.astype("object")
+        df.fillna(value="", inplace=True)
         for index in range(df.shape[0]):
             data.append({key: value[index] for key, value in df.to_dict().items()})
     except:
@@ -66,6 +69,19 @@ def update_state(data: list[dict], index: int, states: list[str]) -> None:
     data[index]["STATE_1"] = states[0]
     data[index]["STATE_2"] = states[1]
     data[index]["STATE_3"] = states[2]
+
+
+def import_cookies() -> list[dict] | None:
+    try:
+        with open("resources/cookies.pkl", "rb") as file:
+            return load(file)
+    except:
+        return None
+
+
+def export_cookies(driver: WebDriver) -> None:
+    with open("resources/cookies.pkl", "wb") as file:
+        dump(driver.get_cookies(), file)
 
 
 # LOGIN TASK.
@@ -102,16 +118,47 @@ def handle_verification_phone(driver: WebDriver, notification: StringVar) -> Non
         notification.set("NO PHONE VERIFICATION")
 
 
+def login_with_cookies(
+    driver: WebDriver, notification: StringVar, is_logged_in: BooleanVar
+) -> None:
+    cookies = import_cookies()
+    # CHECK COOKIES.
+    if not cookies:
+        notification.set("CAN'T FIND COOKIES")
+        is_logged_in.set(False)
+        return
+    # ADD COOKIES.
+    for cookie in cookies:
+        driver.add_cookie(cookie)
+    # CHECK LOGIN.
+    if get_link(driver, "https://www.linkedin.com/login"):
+        notification.set("LOGIN SUCCESSFULLY")
+        is_logged_in.set(True)
+    else:
+        notification.set("LOGIN FAILED")
+        is_logged_in.set(False)
+
+
 def login(
     driver: WebDriver,
     notification: StringVar,
     is_logged_in: BooleanVar,
+    used_cookies: BooleanVar,
     username: str,
     password: str,
 ) -> None:
     try:
         # GO TO LOGIN PAGE.
         get_link(driver, "https://www.linkedin.com/login")
+        if used_cookies.get():
+            login_with_cookies(driver, notification, is_logged_in)
+            sleep(3)
+        # CHECK LOGIN.
+        if is_logged_in.get():
+            return
+        else:
+            notification.set("CONTINUE WITH CREDENTAILS")
+            sleep(3)
         # TYPE USERNAME & PASSWORD.
         driver.find_element(By.XPATH, const.FIELD_USERNAME).send_keys(username)
         driver.find_element(By.XPATH, const.FIELD_PASSWORD).send_keys(password)
@@ -124,6 +171,8 @@ def login(
             driver.find_element(By.XPATH, const.AVATAR)
             notification.set("LOGIN SUCCESSFULLY")
             is_logged_in.set(True)
+            if used_cookies.get():
+                export_cookies(driver)
         except:
             handle_verification_pin(driver, notification)
             sleep(2)
@@ -133,6 +182,8 @@ def login(
             sleep(2)
             notification.set("LOGIN SUCCESSFULLY")
             is_logged_in.set(True)
+            if used_cookies.get():
+                export_cookies(driver)
     except:
         notification.set("LOGIN FAILED")
         is_logged_in.set(False)
@@ -210,15 +261,15 @@ def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -
         textbox.send_keys(Keys.CONTROL + "a")
         textbox.send_keys(Keys.DELETE)
         sleep(2)
-
         textbox.send_keys(message)
         sleep(2)
         # ATTACH DATA.
-        rel_path = path.join("resources", "attachments", attachment)
-        abs_path = path.abspath(rel_path)
-        attachbox = driver.find_element(By.XPATH, const.FIELD_ATTACHMENT)
-        attachbox.send_keys(abs_path)
-        sleep(2)
+        if attachment:
+            rel_path = path.join("resources", "attachments", attachment)
+            abs_path = path.abspath(rel_path)
+            attachbox = driver.find_element(By.XPATH, const.FIELD_ATTACHMENT)
+            attachbox.send_keys(abs_path)
+            sleep(2)
         # SEND MESSAGE.
         driver.find_element(By.XPATH, const.BUTTON_SUBMIT_MESSAGE).click()
 

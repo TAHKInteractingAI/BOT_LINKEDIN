@@ -18,16 +18,22 @@ class App(CTk):
         # CONTROL VARIABLE.
         self.notification = StringVar(value="")
         self.is_logged_in = BooleanVar(value=False)
+        self.used_cookies = BooleanVar(value=False)
         self.username = StringVar(value="partner.info@ah-globalgroup.com")
         self.password = StringVar(value="Nhan123@")
         # LAYOUT.
-        AccountFrame(self, username=self.username, password=self.password)
+        AccountFrame(
+            self,
+            username=self.username,
+            password=self.password,
+            used_cookies=self.used_cookies,
+        )
         Notification(self, textvariable=self.notification)
         FeatureFrame(self, login=self.login, run_task=self.run_task)
 
     def set_location(self) -> None:
         # SET WINDOW SIZE.
-        WINDOW_WIDTH, WINDOW_HEIGHT = 400, 450
+        WINDOW_WIDTH, WINDOW_HEIGHT = 400, 475
         # GET SCREEN SIZE.
         SCREEN_WIDTH = self.winfo_screenwidth()
         SCREEN_HEIGHT = self.winfo_screenheight()
@@ -64,6 +70,7 @@ class App(CTk):
                     App.DRIVER,
                     self.notification,
                     self.is_logged_in,
+                    self.used_cookies,
                     self.username.get(),
                     self.password.get(),
                 )

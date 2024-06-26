@@ -2,7 +2,7 @@
 PATH_CHROME_DRIVER = "resources/chromedriver.exe"
 PATH_EXCEL_DATA = "resources/data.xlsx"
 
-# DESIGN CONSTANTS.
+# UI CONSTANTS.
 FONT_B = ("monospace", 14, "bold")
 FONT_I = ("monospace", 14, "italic")
 
