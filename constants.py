@@ -1,11 +1,3 @@
-# PATH.
-PATH_CHROME_DRIVER = "resources/chromedriver.exe"
-PATH_EXCEL_DATA = "resources/data.xlsx"
-
-# UI CONSTANTS.
-FONT_B = ("monospace", 14, "bold")
-FONT_I = ("monospace", 14, "italic")
-
 # LOGIN.
 FIELD_USERNAME = "/html/body/div[1]/main/div[2]/div[1]/form/div[1]/input"
 FIELD_PASSWORD = "/html/body/div[1]/main/div[2]/div[1]/form/div[2]/input"

@@ -1,5 +1,8 @@
 from customtkinter import CTk, CTkButton, CTkLabel, CTkEntry, CTkFrame, CTkCheckBox
-from constants import FONT_B, FONT_I
+
+# CONSTANTS.
+FONT_B = ("monospace", 14, "bold")
+FONT_I = ("monospace", 14, "italic")
 
 
 class CustomEntry(CTkEntry):
@@ -11,12 +14,13 @@ class CustomEntry(CTkEntry):
         self.pack(padx=padx, pady=pady)
 
 
-class UsedCookies(CTkCheckBox):
+class CustomCkBox(CTkCheckBox):
     def __init__(self, **configs):
-        configs.update({"text": "Apply Cookies", "font": FONT_I})
+        side = configs.pop("side", "left")
+        configs.update({"font": FONT_I})
 
         super().__init__(**configs)
-        self.pack(anchor="w", padx=20, pady=20)
+        self.pack(side=side, padx=20, pady=20)
 
 
 class CustomButton(CTkButton):
@@ -51,11 +55,13 @@ class AccountFrame(CTkFrame):
         self.pack(padx=20, pady=20)
         # CONTROL VARIABLES.
         username, password = configs.pop("username", ""), configs.pop("password", "")
-        used_cookies = configs.pop("used_cookies", None)
+        use_cookies = configs.pop("used_cookies", None)
+        use_ghseets = configs.pop("used_gsheets", None)
 
         CustomEntry(master=self, textvariable=username)
         CustomEntry(master=self, textvariable=password, show=" ", pady=0)
-        UsedCookies(master=self, variable=used_cookies)
+        CustomCkBox(master=self, text="Use Cookies", variable=use_cookies, side="left")
+        CustomCkBox(master=self, text="Use GSheets", variable=use_ghseets, side="right")
 
 
 class FeatureFrame(CTkFrame):

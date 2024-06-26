@@ -1,12 +1,32 @@
+from os import path
 from threading import Thread
 from customtkinter import CTk, StringVar, BooleanVar
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.service import Service
 
 import features
+from esheets import import_excel
+from gsheets import import_gsheet
 from components import Notification, AccountFrame, FeatureFrame
+
+# CREDENTAILS PATH.
+CREDENTAILS_PATH = path.join("resources", "chromedriver.exe")
 
 
 class App(CTk):
     DRIVER, DATA = None, []
+
+    @classmethod
+    def load_driver(cls) -> None:
+        if cls.DRIVER != None:
+            cls.DRIVER.close()
+        else:
+            try:
+                service = Service(executable_path=CREDENTAILS_PATH)
+                cls.DRIVER = Chrome(service=service)
+                cls.DRIVER.implicitly_wait(10)
+            except:
+                cls.DRIVER = None
 
     def __init__(self):
         super().__init__(fg_color="black")
@@ -19,6 +39,7 @@ class App(CTk):
         self.notification = StringVar(value="")
         self.is_logged_in = BooleanVar(value=False)
         self.used_cookies = BooleanVar(value=False)
+        self.used_gsheets = BooleanVar(value=True)
         self.username = StringVar(value="partner.info@ah-globalgroup.com")
         self.password = StringVar(value="Nhan123@")
         # LAYOUT.
@@ -27,6 +48,7 @@ class App(CTk):
             username=self.username,
             password=self.password,
             used_cookies=self.used_cookies,
+            used_gsheets=self.used_gsheets,
         )
         Notification(self, textvariable=self.notification)
         FeatureFrame(self, login=self.login, run_task=self.run_task)
@@ -52,12 +74,12 @@ class App(CTk):
         # CLEAR NOTIFICATION.
         self.notification.set("")
         # LOAD DATA.
-        App.DATA = features.import_excel()
+        App.DATA = import_gsheet() if self.used_gsheets.get() else import_excel()
         if not App.DATA:
             self.notification.set("CAN'T LOAD DATA")
             return False
         # LOAD DRIVER.
-        App.DRIVER = features.load_driver(App.DRIVER)
+        App.load_driver()
         if not App.DRIVER:
             self.notification.set("CAN'T LOAD DRIVER")
             return False
@@ -89,7 +111,7 @@ class App(CTk):
         if self.check_run_task():
             Thread(
                 target=lambda: features.run_task(
-                    App.DRIVER, App.DATA, self.notification
+                    App.DRIVER, App.DATA, self.notification, self.used_gsheets
                 )
             ).start()
 

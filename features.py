@@ -2,52 +2,23 @@ from os import path
 from time import sleep
 from pickle import load, dump
 from customtkinter import StringVar, BooleanVar
-from pandas import DataFrame, ExcelWriter, read_excel
 
-from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 import constants as const
+from esheets import export_excel
+from gsheets import export_gsheet
+
+# CONSTANTS.
+CREDENTAILS_PATH = path.join("resources", "privates", "cookies.pkl")
 
 
 # SUPPORT FUNCTION.
-def load_driver(driver: WebDriver | None) -> WebDriver | None:
-    if driver != None:
-        driver.close()
-    else:
-        try:
-            service = Service(executable_path=const.PATH_CHROME_DRIVER)
-            driver = Chrome(service=service)
-            driver.implicitly_wait(10)
-        except:
-            driver = None
-    return driver
-
-
-def import_excel() -> list[dict]:
-    data = list()
-    try:
-        df = read_excel(const.PATH_EXCEL_DATA, sheet_name="Sheet1")
-        df = df.astype("object")
-        df.fillna(value="", inplace=True)
-        for index in range(df.shape[0]):
-            data.append({key: value[index] for key, value in df.to_dict().items()})
-    except:
-        pass
-    return data
-
-
-def export_excel(data: list[dict]) -> None:
-    with ExcelWriter(const.PATH_EXCEL_DATA, engine="openpyxl", mode="w") as writer:
-        DataFrame(data).to_excel(writer, sheet_name="Sheet1", index=False)
-
-
 def get_link(driver: WebDriver, link: str) -> bool:
     try:
         driver.get(link)
@@ -73,14 +44,14 @@ def update_state(data: list[dict], index: int, states: list[str]) -> None:
 
 def import_cookies() -> list[dict] | None:
     try:
-        with open("resources/cookies.pkl", "rb") as file:
+        with open(CREDENTAILS_PATH, "rb") as file:
             return load(file)
     except:
         return None
 
 
 def export_cookies(driver: WebDriver) -> None:
-    with open("resources/cookies.pkl", "wb") as file:
+    with open(CREDENTAILS_PATH, "wb") as file:
         dump(driver.get_cookies(), file)
 
 
@@ -190,7 +161,12 @@ def login(
 
 
 # MAIN TASKS.
-def run_task(driver: WebDriver, data: list[dict], notification: StringVar) -> None:
+def run_task(
+    driver: WebDriver,
+    data: list[dict],
+    notification: StringVar,
+    used_gsheets: BooleanVar,
+) -> None:
     for index, datum in enumerate(data):
         # CONTINUE TO NEXT RECORD.
         if not get_link(driver, datum["LINKEDIN_LINK"]):
@@ -200,7 +176,10 @@ def run_task(driver: WebDriver, data: list[dict], notification: StringVar) -> No
         send_message(driver, data, index, datum)
     # EXPORT DATA.
     notification.set("TASK COMPLETED")
-    export_excel(data)
+    if used_gsheets.get():
+        export_gsheet(data)
+    else:
+        export_excel(data)
 
 
 def send_connect(driver: WebDriver, data: list[dict], index: int) -> None:
@@ -262,7 +241,6 @@ def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -
         textbox.send_keys(Keys.DELETE)
         sleep(2)
         textbox.send_keys(message)
-        sleep(2)
         # ATTACH DATA.
         if attachment:
             rel_path = path.join("resources", "attachments", attachment)
@@ -271,6 +249,8 @@ def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -
             attachbox.send_keys(abs_path)
             sleep(2)
         # SEND MESSAGE.
+        CONDITION = EC.element_to_be_clickable((By.XPATH, const.BUTTON_SUBMIT_MESSAGE))
+        WebDriverWait(driver, 15).until(CONDITION)
         driver.find_element(By.XPATH, const.BUTTON_SUBMIT_MESSAGE).click()
 
         update_state(data, index, const.CASE_SUCCESS)
