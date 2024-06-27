@@ -87,7 +87,7 @@ def login(
         get_link(driver, "https://www.linkedin.com/login")
         # if used_cookies.get():
         #     login_with_cookies(driver, notification, is_logged_in)
-        #     sleep(5)
+        #     sleep(3)
         # CHECK LOGIN.
         # if is_logged_in.get():
         #     return
@@ -156,6 +156,10 @@ def send_connect(driver: WebDriver, data: list[dict], index: int) -> None:
     # CHECK STATUS.
     if check_status(data, index, const.CASE_SUCCESS):
         return
+    # CHECK MESSAGE STATUS.
+    has_sent = check_status(data, index, const.CASE_SUCCESS)
+    if has_sent:
+        return
 
     try:
         CONDITION = EC.presence_of_element_located((By.XPATH, const.BUTTON_CONNECT))
@@ -183,9 +187,7 @@ def send_connect(driver: WebDriver, data: list[dict], index: int) -> None:
 
             button = driver.find_element(By.XPATH, const.BUTTON_MESSAGE)
             status = button.get_attribute("aria-label")
-            # CHECK STATUS.
-            has_sent = check_status(data, index, const.CASE_SUCCESS)
-            if not has_sent and "Message" in status:
+            if "Message" in status:
                 update_state(data, index, const.CASE_MESSAGE)
         except:
             update_state(data, index, const.CASE_CONNECT)
@@ -206,7 +208,7 @@ def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -
         rel_path = path.join("resources", "attachments", attachment)
         abs_path = path.abspath(rel_path)
         if not path.exists(abs_path):
-            return f"{attachment} NOT FOUND AT ROW {index + 2}"
+            return f"FILE NOT FOUND AT ROW {index + 2}"
 
     try:
         CONDITION = EC.presence_of_element_located((By.XPATH, const.BUTTON_MESSAGE))
