@@ -60,8 +60,11 @@ class AccountFrame(CTkFrame):
 
         CustomEntry(master=self, textvariable=username)
         CustomEntry(master=self, textvariable=password, show=" ", pady=0)
-        CustomCkBox(master=self, text="Use Cookies", variable=use_cookies, side="left")
-        CustomCkBox(master=self, text="Use GSheets", variable=use_ghseets, side="right")
+        # FOR DEVELOPMENT.
+        # CustomCkBox(master=self, text="Use Cookies", variable=use_cookies, side="left")
+        # CustomCkBox(master=self, text="Use GSheets", variable=use_ghseets, side="right")
+        # FOR PRODUCTION.
+        CustomCkBox(master=self, text="Use GSheets", variable=use_ghseets)
 
 
 class FeatureFrame(CTkFrame):

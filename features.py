@@ -1,6 +1,5 @@
 from os import path
 from time import sleep
-from pickle import load, dump
 from customtkinter import StringVar, BooleanVar
 
 from selenium.webdriver.common.by import By
@@ -14,8 +13,7 @@ import constants as const
 from esheets import export_excel
 from gsheets import export_gsheet
 
-# CONSTANTS.
-CREDENTAILS_PATH = path.join("resources", "privates", "cookies.pkl")
+# from cookies import export_cookies, login_with_cookies
 
 
 # SUPPORT FUNCTION.
@@ -40,19 +38,6 @@ def update_state(data: list[dict], index: int, states: list[str]) -> None:
     data[index]["STATE_1"] = states[0]
     data[index]["STATE_2"] = states[1]
     data[index]["STATE_3"] = states[2]
-
-
-def import_cookies() -> list[dict] | None:
-    try:
-        with open(CREDENTAILS_PATH, "rb") as file:
-            return load(file)
-    except:
-        return None
-
-
-def export_cookies(driver: WebDriver) -> None:
-    with open(CREDENTAILS_PATH, "wb") as file:
-        dump(driver.get_cookies(), file)
 
 
 # LOGIN TASK.
@@ -89,27 +74,6 @@ def handle_verification_phone(driver: WebDriver, notification: StringVar) -> Non
         notification.set("NO PHONE VERIFICATION")
 
 
-def login_with_cookies(
-    driver: WebDriver, notification: StringVar, is_logged_in: BooleanVar
-) -> None:
-    cookies = import_cookies()
-    # CHECK COOKIES.
-    if not cookies:
-        notification.set("CAN'T FIND COOKIES")
-        is_logged_in.set(False)
-        return
-    # ADD COOKIES.
-    for cookie in cookies:
-        driver.add_cookie(cookie)
-    # CHECK LOGIN.
-    if get_link(driver, "https://www.linkedin.com/login"):
-        notification.set("LOGIN SUCCESSFULLY")
-        is_logged_in.set(True)
-    else:
-        notification.set("LOGIN FAILED")
-        is_logged_in.set(False)
-
-
 def login(
     driver: WebDriver,
     notification: StringVar,
@@ -121,15 +85,15 @@ def login(
     try:
         # GO TO LOGIN PAGE.
         get_link(driver, "https://www.linkedin.com/login")
-        if used_cookies.get():
-            login_with_cookies(driver, notification, is_logged_in)
-            sleep(3)
+        # if used_cookies.get():
+        #     login_with_cookies(driver, notification, is_logged_in)
+        #     sleep(5)
         # CHECK LOGIN.
-        if is_logged_in.get():
-            return
-        else:
-            notification.set("CONTINUE WITH CREDENTAILS")
-            sleep(3)
+        # if is_logged_in.get():
+        #     return
+        # else:
+        #     notification.set("CONTINUE WITH CREDENTAILS")
+        #     sleep(3)
         # TYPE USERNAME & PASSWORD.
         driver.find_element(By.XPATH, const.FIELD_USERNAME).send_keys(username)
         driver.find_element(By.XPATH, const.FIELD_PASSWORD).send_keys(password)
@@ -142,8 +106,8 @@ def login(
             driver.find_element(By.XPATH, const.AVATAR)
             notification.set("LOGIN SUCCESSFULLY")
             is_logged_in.set(True)
-            if used_cookies.get():
-                export_cookies(driver)
+            # if used_cookies.get():
+            #     export_cookies(driver)
         except:
             handle_verification_pin(driver, notification)
             sleep(2)
@@ -153,8 +117,8 @@ def login(
             sleep(2)
             notification.set("LOGIN SUCCESSFULLY")
             is_logged_in.set(True)
-            if used_cookies.get():
-                export_cookies(driver)
+            # if used_cookies.get():
+            #     export_cookies(driver)
     except:
         notification.set("LOGIN FAILED")
         is_logged_in.set(False)
@@ -169,6 +133,7 @@ def run_task(
 ) -> None:
     error = None
     for index, datum in enumerate(data):
+        sleep(5)
         # CONTINUE TO NEXT RECORD.
         if not get_link(driver, datum["LINKEDIN_LINK"]):
             continue
@@ -218,7 +183,9 @@ def send_connect(driver: WebDriver, data: list[dict], index: int) -> None:
 
             button = driver.find_element(By.XPATH, const.BUTTON_MESSAGE)
             status = button.get_attribute("aria-label")
-            if "Message" in status:
+            # CHECK STATUS.
+            has_sent = check_status(data, index, const.CASE_SUCCESS)
+            if not has_sent and "Message" in status:
                 update_state(data, index, const.CASE_MESSAGE)
         except:
             update_state(data, index, const.CASE_CONNECT)
@@ -228,22 +195,30 @@ def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -
     # CHECK STATUS.
     if not check_status(data, index, const.CASE_MESSAGE):
         return
+    # CHECK MESSAGE.
+    name, message = datum["NAME"], datum["MESSAGE"]
+    message = message.replace("{{name}}", name)
+    if message == "":
+        return None
+    # CHECK ATTACHMENT.
+    attachment = datum["ATTACHMENT"]
+    if attachment:
+        rel_path = path.join("resources", "attachments", attachment)
+        abs_path = path.abspath(rel_path)
+        if not path.exists(abs_path):
+            return f"{attachment} NOT FOUND AT ROW {index + 2}"
 
     try:
-        # GET DATA OF PROFILE.
-        name, message = datum["NAME"], datum["MESSAGE"]
-        message = message.replace("{{name}}", name)
-        attachment = datum["ATTACHMENT"]
-
         CONDITION = EC.presence_of_element_located((By.XPATH, const.BUTTON_MESSAGE))
         WebDriverWait(driver, 15).until(CONDITION)
         # CLICK BUTTON.
         driver.find_element(By.XPATH, const.BUTTON_MESSAGE).click()
         sleep(2)
-        # TYPE MESSAGE.
+        # FIND TEXTBOX.
         for field in const.FIELD_MESSAGE:
             try:
                 textbox = driver.find_element(By.XPATH, field)
+                break
             except:
                 pass
         # CLEAR TEXT.
@@ -251,22 +226,18 @@ def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -
             textbox.send_keys(Keys.CONTROL + "a")
             textbox.send_keys(Keys.DELETE)
             sleep(2)
+        # TYPE MESSAGE.
         textbox.send_keys(message)
         # ATTACH DATA.
         if attachment:
-            rel_path = path.join("resources", "attachments", attachment)
-            abs_path = path.abspath(rel_path)
-            if path.exists(abs_path):
-                attachbox = driver.find_element(By.XPATH, const.FIELD_ATTACHMENT)
-                attachbox.send_keys(abs_path)
-                sleep(2)
-            else:
-                return f"{attachment} NOT FOUND AT ROW {index + 2}"
+            attachbox = driver.find_element(By.XPATH, const.FIELD_ATTACHMENT)
+            attachbox.send_keys(abs_path)
+            sleep(2)
         # SEND MESSAGE.
         CONDITION = EC.element_to_be_clickable((By.XPATH, const.BUTTON_SUBMIT_MESSAGE))
         WebDriverWait(driver, 15).until(CONDITION)
         driver.find_element(By.XPATH, const.BUTTON_SUBMIT_MESSAGE).click()
+
         update_state(data, index, const.CASE_SUCCESS)
-        sleep(5)
     except:
         pass
