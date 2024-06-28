@@ -1,4 +1,4 @@
 .venv
 __pycache__
-resources/privates/cookies.pkl
-resources/privates/credentials.json
+resources/attachments/
+resources/privates/
