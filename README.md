@@ -1,6 +1,6 @@
 # LINKEDIN TOOL BOT GUIDE
 
-![](public\DESCRIPTION_0.png)
+![](https://github.com/TAHKInteractingAI/BOT_LINKEDIN/blob/main/public/DESCRIPTION_0.png)
 
 # LƯU Ý KHI SỬ DỤNG ỨNG DỤNG
 1. *Tất cả các tệp tin liên quan và tương tác với ứng dụng được lưu tại thư mục `app`.*
@@ -23,14 +23,14 @@
 4. *Nhấn nút `LOGIN` để tiến hành đăng nhập vào website LinkedIn.*
    - *Đợi cho đến khi `Notification View` hiển thị `LOGIN SUCCESSFULLY`.*
 
-      ![](public\DESCRIPTION_1.png)
+      ![](https://github.com/TAHKInteractingAI/BOT_LINKEDIN/blob/main/public/DESCRIPTION_1.png)
 
    - *Trong quá trình đó, ứng dụng sẽ tiến hành kiểm tra các xác thực khi đăng nhập (nếu có) bao gồm: `PIN VERIFICATION`, `CAPTCHA` và `PHONE VERIFICATION`.*
    - *Nếu `Notification View` hiển thị bất kỳ xác thực nào với từ `DECTECTED` thì vui lòng thực hiện xác thực trong vòng `120 giây`.* ***(Vui lòng đợi đến khi có thông báo mới bắt đầu xác thực)***
 
-      ![](public\DESCRIPTION_2.png)
+      ![](https://github.com/TAHKInteractingAI/BOT_LINKEDIN/blob/main/public/DESCRIPTION_2.png)
 
 5. *Nhấn nút `RUN TASK` để tiến hành các tác vụ chính bao gồm gửi kết nối và gửi tin nhắn.*
    - *Đợi cho đến khi 'Notification View' hiển thị `TASK COMPLETED` thì quá trình thực thi sẽ kết thúc.*
 
-      ![](public\DESCRIPTION_3.png)
+      ![](https://github.com/TAHKInteractingAI/BOT_LINKEDIN/blob/main/public/DESCRIPTION_3.png)
