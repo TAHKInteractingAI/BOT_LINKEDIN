@@ -20,6 +20,9 @@ BUTTON_SUBMIT_CONNECT = "/html/body/div[3]/div/div/div[3]/button[2]"
 # SEND MESSAGE.
 BUTTON_MESSAGE = "/html/body/div[5]/div[3]/div/div/div[2]/div/div/main/section[1]/div[2]/div[3]/div/div[1]/button"
 BUTTON_SUBMIT_MESSAGE = "/html/body/div[5]/div[4]/aside[1]/div[2]/div[1]/div[2]/div/form/footer/div[2]/div[1]/button"
+BUTTON_CLOSE_MESSAGE = (
+    "/html/body/div[5]/div[4]/aside[1]/div[2]/div[1]/header/div[4]/button[3]"
+)
 FIELD_MESSAGE = [
     "/html/body/div[5]/div[4]/aside[1]/div[2]/div[1]/div[2]/div/form/div[2]/div[1]/div/div[1]",
     "/html/body/div[5]/div[4]/aside[1]/div[2]/div[1]/div[2]/div/form/div[3]/div[1]/div/div[1]",

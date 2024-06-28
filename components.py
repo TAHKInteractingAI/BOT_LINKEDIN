@@ -1,4 +1,12 @@
-from customtkinter import CTk, CTkButton, CTkLabel, CTkEntry, CTkFrame, CTkCheckBox
+from customtkinter import (
+    CTk,
+    CTkButton,
+    CTkLabel,
+    CTkEntry,
+    CTkFrame,
+    CTkCheckBox,
+    CTkOptionMenu,
+)
 
 # CONSTANTS.
 FONT_B = ("monospace", 14, "bold")
@@ -26,7 +34,16 @@ class CustomCkBox(CTkCheckBox):
 class CustomButton(CTkButton):
     def __init__(self, **configs):
         padx, pady = configs.pop("padx", 0), configs.pop("pady", 0)
-        configs.update({"width": 150, "height": 40})
+        configs.update({"width": 175, "height": 40})
+
+        super().__init__(**configs)
+        self.pack(padx=padx, pady=pady)
+
+
+class DropDownList(CTkOptionMenu):
+    def __init__(self, **configs):
+        padx, pady = configs.pop("padx", 20), configs.pop("pady", 20)
+        configs.update({"width": 175, "height": 40})
 
         super().__init__(**configs)
         self.pack(padx=padx, pady=pady)
@@ -59,7 +76,7 @@ class AccountFrame(CTkFrame):
         use_ghseets = configs.pop("used_gsheets", None)
 
         CustomEntry(master=self, textvariable=username)
-        CustomEntry(master=self, textvariable=password, show=" ", pady=0)
+        CustomEntry(master=self, textvariable=password, pady=0)
         # FOR DEVELOPMENT.
         # CustomCkBox(master=self, text="Use Cookies", variable=use_cookies, side="left")
         # CustomCkBox(master=self, text="Use GSheets", variable=use_ghseets, side="right")
@@ -72,6 +89,8 @@ class FeatureFrame(CTkFrame):
         super().__init__(master, fg_color="transparent")
         self.pack()
         # FEATURES.
-        login, run_task = configs.pop("login", None), configs.pop("run_task", None)
-        CustomButton(master=self, text="LOGIN", command=login, pady=20)
-        CustomButton(master=self, text="RUN TASK", command=run_task)
+        control = configs.pop("control", None)
+        options = configs.pop("options", None)
+        command = configs.pop("command", None)
+        DropDownList(master=self, values=options, variable=control)
+        CustomButton(master=self, text="RUN TASK", command=command)

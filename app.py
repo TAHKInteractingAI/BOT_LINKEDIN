@@ -1,5 +1,6 @@
 from os import path
 from threading import Thread
+from typing import Callable, Any
 from customtkinter import CTk, StringVar, BooleanVar
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service
@@ -15,6 +16,7 @@ CREDENTAILS_PATH = path.join("resources", "chromedriver.exe")
 
 class App(CTk):
     DRIVER, DATA = None, []
+    OPTIONS = ["LOGIN", "SEND CONNECT", "SEND MESSAGE"]
 
     @classmethod
     def load_driver(cls) -> None:
@@ -43,6 +45,7 @@ class App(CTk):
         self.used_gsheets = BooleanVar(value=True)
         self.username = StringVar(value="partner.info@ah-globalgroup.com")
         self.password = StringVar(value="Nhan123@")
+        self.control = StringVar(value=App.OPTIONS[0])
         # LAYOUT.
         AccountFrame(
             self,
@@ -52,7 +55,9 @@ class App(CTk):
             used_gsheets=self.used_gsheets,
         )
         Notification(self, textvariable=self.notification)
-        FeatureFrame(self, login=self.login, run_task=self.run_task)
+        FeatureFrame(
+            self, control=self.control, options=App.OPTIONS, command=self.run_task
+        )
 
     def set_location(self) -> None:
         # SET WINDOW SIZE.
@@ -99,7 +104,7 @@ class App(CTk):
                 )
             ).start()
 
-    def check_run_task(self) -> bool:
+    def check_run_feature(self) -> bool:
         # CLEAR NOTIFICATION.
         self.notification.set("")
         # CHECK LOGIN.
@@ -108,13 +113,22 @@ class App(CTk):
             return False
         return True
 
-    def run_task(self) -> None:
-        if self.check_run_task():
+    def run_feature(self, feature: Callable[..., Any]) -> None:
+        if self.check_run_feature():
             Thread(
-                target=lambda: features.run_task(
+                target=lambda: feature(
                     App.DRIVER, App.DATA, self.notification, self.used_gsheets
                 )
             ).start()
+
+    def run_task(self) -> None:
+        match self.control.get():
+            case "LOGIN":
+                self.login()
+            case "SEND CONNECT":
+                self.run_feature(features.run_send_connect)
+            case "SEND MESSAGE":
+                self.run_feature(features.run_send_message)
 
 
 if __name__ == "__main__":

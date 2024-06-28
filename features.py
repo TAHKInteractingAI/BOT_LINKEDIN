@@ -125,42 +125,7 @@ def login(
 
 
 # MAIN TASKS.
-def run_task(
-    driver: WebDriver,
-    data: list[dict],
-    notification: StringVar,
-    used_gsheets: BooleanVar,
-) -> None:
-    error = None
-    for index, datum in enumerate(data):
-        sleep(5)
-        # CONTINUE TO NEXT RECORD.
-        if not get_link(driver, datum["LINKEDIN_LINK"]):
-            continue
-        # RUN TASK.
-        send_connect(driver, data, index)
-        error = send_message(driver, data, index, datum)
-        if error != None:
-            notification.set(error)
-            break
-    # EXPORT DATA.
-    if error == None:
-        notification.set("TASK COMPLETED")
-    if used_gsheets.get():
-        export_gsheet(data)
-    else:
-        export_excel(data)
-
-
 def send_connect(driver: WebDriver, data: list[dict], index: int) -> None:
-    # CHECK STATUS.
-    if check_status(data, index, const.CASE_SUCCESS):
-        return
-    # CHECK MESSAGE STATUS.
-    has_sent = check_status(data, index, const.CASE_SUCCESS)
-    if has_sent:
-        return
-
     try:
         CONDITION = EC.presence_of_element_located((By.XPATH, const.BUTTON_CONNECT))
         WebDriverWait(driver, 15).until(CONDITION)
@@ -193,10 +158,30 @@ def send_connect(driver: WebDriver, data: list[dict], index: int) -> None:
             update_state(data, index, const.CASE_CONNECT)
 
 
+def run_send_connect(
+    driver: WebDriver,
+    data: list[dict],
+    notification: StringVar,
+    used_gsheets: BooleanVar,
+) -> None:
+    error = None
+    for index, datum in enumerate(data):
+        sleep(3)
+        # CONTINUE TO NEXT RECORD.
+        if not get_link(driver, datum["LINKEDIN_LINK"]):
+            continue
+        # RUN TASK.
+        send_connect(driver, data, index)
+    # EXPORT DATA.
+    if error == None:
+        notification.set("TASK COMPLETED")
+    if used_gsheets.get():
+        export_gsheet(data)
+    else:
+        export_excel(data)
+
+
 def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -> str:
-    # CHECK STATUS.
-    if not check_status(data, index, const.CASE_MESSAGE):
-        return
     # CHECK MESSAGE.
     name, message = datum["NAME"], datum["MESSAGE"]
     message = message.replace("{{name}}", name)
@@ -239,7 +224,36 @@ def send_message(driver: WebDriver, data: list[dict], index: int, datum: dict) -
         CONDITION = EC.element_to_be_clickable((By.XPATH, const.BUTTON_SUBMIT_MESSAGE))
         WebDriverWait(driver, 15).until(CONDITION)
         driver.find_element(By.XPATH, const.BUTTON_SUBMIT_MESSAGE).click()
+        sleep(3)
+        # CLOSE.
+        driver.find_element(By.XPATH, const.BUTTON_CLOSE_MESSAGE).click()
 
         update_state(data, index, const.CASE_SUCCESS)
     except:
         pass
+
+
+def run_send_message(
+    driver: WebDriver,
+    data: list[dict],
+    notification: StringVar,
+    used_gsheets: BooleanVar,
+) -> None:
+    error = None
+    for index, datum in enumerate(data):
+        sleep(3)
+        # CONTINUE TO NEXT RECORD.
+        if not get_link(driver, datum["LINKEDIN_LINK"]):
+            continue
+        # RUN TASK.
+        error = send_message(driver, data, index, datum)
+        if error != None:
+            notification.set(error)
+            break
+    # EXPORT DATA.
+    if error == None:
+        notification.set("TASK COMPLETED")
+    if used_gsheets.get():
+        export_gsheet(data)
+    else:
+        export_excel(data)
