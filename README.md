@@ -20,7 +20,7 @@
 3. *Khởi động ứng dụng `app.exe`.*
    - *Nhập tên tại khoản và mật khẩu LinkedIn.*
    - *Tùy chọn `Use GSheet`.*
-4. *Nhấn nút `LOGIN` để tiến hành đăng nhập vào website LinkedIn.*
+4. *Chọn tác vụ `LOGIN` trong `Task Menu` & Nhấn nút `RUN TASK` để tiến hành đăng nhập vào website LinkedIn.*
    - *Đợi cho đến khi `Notification View` hiển thị `LOGIN SUCCESSFULLY`.*
 
       ![](https://github.com/TAHKInteractingAI/BOT_LINKEDIN/blob/main/public/DESCRIPTION_1.png)
@@ -30,7 +30,7 @@
 
       ![](https://github.com/TAHKInteractingAI/BOT_LINKEDIN/blob/main/public/DESCRIPTION_2.png)
 
-5. *Nhấn nút `RUN TASK` để tiến hành các tác vụ chính bao gồm gửi kết nối và gửi tin nhắn.*
+5. *Chọn các tác vụ khác trong `Task Menu` & Nhấn nút `RUN TASK` để thực thi tác vụ.*
    - *Đợi cho đến khi 'Notification View' hiển thị `TASK COMPLETED` thì quá trình thực thi sẽ kết thúc.*
 
       ![](https://github.com/TAHKInteractingAI/BOT_LINKEDIN/blob/main/public/DESCRIPTION_3.png)
