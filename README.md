@@ -7,7 +7,7 @@
 2. *Ứng dụng được lưu tại `app\dist\app.exe`*.
 3. *Driver ứng dụng được lưu tại `app\dist\resources\chromedriver.exe`*
 4. *Thư mục lưu trữ các tệp đính kèm được lưu trong `app\dist\resources\attachments`*.
-5. *Tập tin phục vụ cho việc thao tác với Excel Offline được lưu tại `resources\privates\data.xlsx`*.
+5. *Tập tin phục vụ cho việc thao tác với Excel Offline được lưu tại `app\dist\resources\privates\data.xlsx`*.
 6. *Ứng dụng yêu cầu với trình duyệt Chrome (126.0.6478.126) & Môi trường Internet ổn định để có thể hoạt động một cách nhanh chóng và chính xác.*
 # HƯỚNG DẪN SỬ DỤNG
 1. *Tải xuống với `Download ZIP` tại Github hoặc dùng lệnh sau đây với Git Bash.*
